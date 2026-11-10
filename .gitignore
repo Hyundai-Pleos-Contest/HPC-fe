@@ -1,0 +1,17 @@
+.gradle/
+.gradle-home/
+.kotlin/
+.local/
+**/build/
+local.properties
+.idea/
+*.iml
+.DS_Store
+*.jks
+*.keystore
+keystore.properties
+.env
+.env.*
+!.env.example
+CLAUDE.local.md
+.claude/settings.local.json

@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">HPC</string>
+    <string name="starter_title">HPC</string>
+    <string name="starter_description">차량용 앱 개발 환경</string>
+</resources>
