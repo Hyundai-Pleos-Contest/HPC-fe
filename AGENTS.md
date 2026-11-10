@@ -7,6 +7,7 @@
 - 기본 `mock`은 차량 연결이 없는 초기 화면이다. SDK 연동 성공이나 실제 차량 데이터로 설명하지 않는다.
 - `-PenablePleos=true`는 별도 `pleos` flavor와 공식 Vehicle SDK 2.3.2를 활성화한다. 공개 메타데이터와 AAR checksum 접근은 확인했다. 공식 빠른 시작의 2.3.1 표기는 실제 배포와 다르므로 가져오기 문서와 Maven 메타데이터를 함께 확인한다.
 - Pleos 빌드 검증: `./gradlew -PenablePleos=true :app:assemblePleosDebug :app:assemblePleosDebugAndroidTest :app:lintPleosDebug`.
+- CI `verify`는 기본 mock 검사 뒤 Pleos 앱·계측 APK 빌드와 Lint를 실행하고 APK를 각각 보관한다. AVD 설치 및 런타임 계측 테스트는 CI에 포함하지 않는다.
 - 전용 Pleos AVD의 읽기 전용 스모크 테스트: `./gradlew -PenablePleos=true :app:connectedPleosDebugAndroidTest --serial <PLEOS_SERIAL>`. 일반 Android 이미지에서 실패를 무시하거나 mock으로 통과시키지 않는다.
 - `src/androidTestPleos`는 debug 계측 검증 코드다. capability와 실제 비-null 도어 상태 콜백을 모두 받아야 성공하며 `initialize()` 반환만으로 연결 성공을 주장하지 않는다. 테스트에 SET·제어·실제 차량 식별자 조회를 추가하지 않는다.
 - 실제 차량 접근은 향후 별도 data 계층에서 SDK/AAOS 어댑터로 구현한다. UI에서 SDK를 직접 호출하거나 mock 값을 실제 값으로 표시하지 않는다.

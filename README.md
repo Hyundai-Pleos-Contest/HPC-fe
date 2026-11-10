@@ -31,7 +31,7 @@ Windows Android 도구의 경로 호환성을 위해 새 clone과 SDK 경로는 
 .\gradlew.bat :app:assembleMockDebug :app:lintMockDebug :app:testMockDebugUnitTest
 ```
 
-macOS/Linux에서는 `bash ./gradlew`를 사용한다. APK는 `app/build/outputs/apk/mock/debug/`에 생성된다. `testMockDebugUnitTest`는 테스트가 추가될 때 실행하며 현재 서비스 로직/단위 테스트가 없어 NO-SOURCE일 수 있다. CI도 mock 빌드·Android Lint·단위 테스트 작업을 실행하고 APK를 보관한다. 에뮬레이터 실행 검증은 별도다.
+macOS/Linux에서는 `bash ./gradlew`를 사용한다. APK는 `app/build/outputs/apk/mock/debug/`에 생성된다. `testMockDebugUnitTest`는 테스트가 추가될 때 실행하며 현재 서비스 로직/단위 테스트가 없어 NO-SOURCE일 수 있다. CI의 `verify`는 mock 빌드·Android Lint·단위 테스트 작업을 실행한 다음, 공개 Vehicle SDK를 사용하는 Pleos 앱·계측 APK 빌드와 Lint를 검사한다. `mock-debug-apk`, `pleos-debug-apk`, `pleos-debug-android-test-apk`를 각각 14일간 보관한다. CI는 AVD 설치나 계측 테스트 실행을 하지 않으며 런타임 검증은 별도다. 로컬 기본 빌드는 계속 `mock`이다.
 
 ## Pleos SDK와 에뮬레이터
 
@@ -65,7 +65,7 @@ adb -s $env:ANDROID_SERIAL shell am start -W -n com.hpc.app.debug/com.hpc.app.Ma
 
 `adb`는 선택한 Android SDK의 `platform-tools`를 PATH에 추가해 사용한다. `sys.boot_completed`는 `1`이어야 한다. AGP 8.10.1의 connected 작업은 `ANDROID_SERIAL`을 장치 필터로 읽으며, 위 명령은 우선순위가 더 높은 `--serial`로도 대상을 고정한다. 앱 APK는 `app/build/outputs/apk/pleos/debug/`, 테스트 APK는 `app/build/outputs/apk/androidTest/pleos/debug/`에 생성된다. 계측 결과는 `app/build/reports/androidTests/connected/`와 `app/build/outputs/androidTest-results/connected/`에서 확인한다.
 
-스모크 테스트는 최대 30초 동안 서비스 준비를 기다리며 capability 성공 뒤 비-null 상태 콜백을 받아야 통과한다. 미지원·권한 거부·null·timeout은 테스트 실패로 남기고 mock 값으로 대체하지 않는다. SET·제어·이벤트 구독은 하지 않으며 종료 시 SDK를 해제한다. `CAR_DOORS` 권한은 `pleosDebug`에만 있고 release에는 추가하지 않는다. 계측 테스트는 Pleos AVD에서 따로 실행해야 하므로 기본 CI의 mock 검사에 포함되지 않는다.
+스모크 테스트는 최대 30초 동안 서비스 준비를 기다리며 capability 성공 뒤 비-null 상태 콜백을 받아야 통과한다. 미지원·권한 거부·null·timeout은 테스트 실패로 남기고 mock 값으로 대체하지 않는다. SET·제어·이벤트 구독은 하지 않으며 종료 시 SDK를 해제한다. `CAR_DOORS` 권한은 `pleosDebug`에만 있고 release에는 추가하지 않는다. CI에서는 계측 APK의 컴파일을 검증하고, 실제 테스트는 전용 Pleos AVD에서 위 connected 명령으로 실행한다.
 
 실제 검증 상태: 공개 SDK 다운로드/checksum 확인, Pleos debug APK·계측 APK 빌드 및 Android Lint를 통과했다. 전용 AVD에서 앱 실행과 스모크 테스트는 별도 검증 단계이며, 빌드 성공만으로 런타임 연결 성공을 주장하지 않는다.
 
