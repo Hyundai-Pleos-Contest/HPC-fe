@@ -7,7 +7,7 @@
 | 구성 | 버전 |
 | --- | --- |
 | 빌드 JDK | 21 (Java/Kotlin bytecode target 17) |
-| Gradle Wrapper | 8.11.1 |
+| Gradle Wrapper | 8.14.6 |
 | Android Gradle Plugin | 8.10.1 |
 | Kotlin / Compose compiler | 2.2.21 |
 | Compose BOM | 2025.05.01 |
@@ -16,7 +16,7 @@
 | Pleos 에뮬레이터 | 2.1.0, Android API 34 |
 | 선택 Vehicle SDK | 2.3.1 (공식 문서 좌표, 실제 배포 접근 확인 필요) |
 
-AGP 8.10의 최소 JDK는 17이고 Gradle 8.11.1을 요구한다. Kotlin 2.2의 D8/R8 지원을 위해 AGP 8.10 계열을 사용한다. 이 저장소의 개발·CI는 JDK 21로 통일한다. Android Studio 내장 JBR이 다른 버전이면 Settings > Build Tools > Gradle의 Gradle JDK를 21로 지정한다. SDK 35는 컴파일용이며 실행 검증 대상 Pleos 이미지는 API 34다. targetSdk는 현재 Pleos 검증 목표 34이며 향후 배포 조건 확인 후 갱신한다.
+AGP 8.10의 최소 JDK는 17, 최소 Gradle은 8.11.1이다. 이 저장소는 Gradle 8.x 보안 수정이 포함된 8.14.6으로 고정한다. Kotlin 2.2의 D8/R8 지원을 위해 AGP 8.10 계열을 사용한다. 개발·CI는 JDK 21로 통일한다. Android Studio 내장 JBR이 다른 버전이면 Settings > Build Tools > Gradle의 Gradle JDK를 21로 지정한다. SDK 35는 컴파일용이며 실행 검증 대상 Pleos 이미지는 API 34다. targetSdk는 현재 Pleos 검증 목표 34이며 향후 배포 조건 확인 후 갱신한다.
 
 ## 시작
 
@@ -90,3 +90,4 @@ Android 앱은 `.env` 파일을 자동으로 읽지 않는다. 다음 Gradle pro
 - [AGP 8.10 호환성](https://developer.android.com/build/releases/agp-8-10-0-release-notes)
 - [Kotlin D8/R8 지원](https://developer.android.com/build/kotlin-support)
 - [Kotlin Gradle 호환성](https://kotlinlang.org/docs/gradle-configure-project.html)
+- [Gradle 8.14.6 보안 수정](https://docs.gradle.org/8.14.6/release-notes.html)
