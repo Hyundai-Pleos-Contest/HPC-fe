@@ -59,15 +59,31 @@ Android Studio SDK Manager에서 위 사이트를 추가하고 API 34 Pleos Conn
 $env:ANDROID_SERIAL = '<PLEOS_SERIAL>'
 adb -s $env:ANDROID_SERIAL shell getprop sys.boot_completed
 adb -s $env:ANDROID_SERIAL install -r app/build/outputs/apk/pleos/debug/app-pleos-debug.apk
-adb -s $env:ANDROID_SERIAL shell am start -W -n com.hpc.app.debug/com.hpc.app.MainActivity
-.\gradlew.bat -PenablePleos=true :app:connectedPleosDebugAndroidTest --serial $env:ANDROID_SERIAL
+adb -s $env:ANDROID_SERIAL shell am start --user current -W -a android.intent.action.MAIN -c android.intent.category.LAUNCHER -n com.hpc.app.debug/com.hpc.app.MainActivity
+.\gradlew.bat -PenablePleos=true :app:connectedPleosDebugAndroidTest
 ```
 
-`adb`는 선택한 Android SDK의 `platform-tools`를 PATH에 추가해 사용한다. `sys.boot_completed`는 `1`이어야 한다. AGP 8.10.1의 connected 작업은 `ANDROID_SERIAL`을 장치 필터로 읽으며, 위 명령은 우선순위가 더 높은 `--serial`로도 대상을 고정한다. 앱 APK는 `app/build/outputs/apk/pleos/debug/`, 테스트 APK는 `app/build/outputs/apk/androidTest/pleos/debug/`에 생성된다. 계측 결과는 `app/build/reports/androidTests/connected/`와 `app/build/outputs/androidTest-results/connected/`에서 확인한다.
+`adb`는 선택한 Android SDK의 `platform-tools`를 PATH에 추가해 사용한다. `sys.boot_completed`는 `1`이어야 한다. AGP 8.10.1의 connected 작업은 `ANDROID_SERIAL`로 대상을 선택한다. `--serial`은 Gradle의 불변 목록을 수정하는 AGP 코드에서 `UnsupportedOperationException`을 일으킬 수 있어 사용하지 않는다. 앱 APK는 `app/build/outputs/apk/pleos/debug/`, 테스트 APK는 `app/build/outputs/apk/androidTest/pleos/debug/`에 생성된다. Gradle 계측 결과는 `app/build/reports/androidTests/connected/`와 `app/build/outputs/androidTest-results/connected/`에서 확인한다.
 
-스모크 테스트는 최대 30초 동안 서비스 준비를 기다리며 capability 성공 뒤 비-null 상태 콜백을 받아야 통과한다. 미지원·권한 거부·null·timeout은 테스트 실패로 남기고 mock 값으로 대체하지 않는다. SET·제어·이벤트 구독은 하지 않으며 종료 시 SDK를 해제한다. `CAR_DOORS` 권한은 `pleosDebug`에만 있고 release에는 추가하지 않는다. CI에서는 계측 APK의 컴파일을 검증하고, 실제 테스트는 전용 Pleos AVD에서 위 connected 명령으로 실행한다.
+Gradle 계측 테스트 종료 후 앱이 제거될 수 있다. 초기 화면을 다시 확인하려면 위 앱 APK 설치와 현재 사용자 대상 launcher 실행 명령을 다시 실행한다.
 
-실제 검증 상태: 공개 SDK 다운로드/checksum 확인, Pleos debug APK·계측 APK 빌드 및 Android Lint를 통과했다. 전용 AVD에서 앱 실행과 스모크 테스트는 별도 검증 단계이며, 빌드 성공만으로 런타임 연결 성공을 주장하지 않는다.
+이전 로컬 실행에서는 Gradle connected가 APK 설치 전에 실행하는 `service list` 조회가 멈췄고, 직접 조회도 `accessibility` 항목 뒤에 응답이 끝나지 않았다. 이 현상의 구체 원인은 확정하지 않았다. 같은 문제가 발생하면 진행 중인 connected 작업을 종료한 뒤, Android가 공식 지원하는 [adb 계측 실행](https://developer.android.com/studio/test/command-line#run-tests-with-adb)으로 같은 테스트 APK를 실행한다. 이 경로는 Gradle의 서비스 목록 사전검사를 거치지 않고 AndroidJUnitRunner를 실행하며 SDK 테스트의 성공 조건은 그대로 유지한다.
+
+```powershell
+$env:ANDROID_SERIAL = '<PLEOS_SERIAL>'
+.\gradlew.bat -PenablePleos=true :app:assemblePleosDebug :app:assemblePleosDebugAndroidTest
+adb -s $env:ANDROID_SERIAL install -r app/build/outputs/apk/pleos/debug/app-pleos-debug.apk
+adb -s $env:ANDROID_SERIAL install -r -t app/build/outputs/apk/androidTest/pleos/debug/app-pleos-debug-androidTest.apk
+adb -s $env:ANDROID_SERIAL shell am instrument -w -r --user current -e class com.hpc.app.VehicleSdkSmokeTest com.hpc.app.debug.test/androidx.test.runner.AndroidJUnitRunner
+```
+
+테스트 APK 설치의 `-t`는 `testOnly` APK를 허용한다. `--user current`는 Automotive의 현재 로그인 사용자에서 테스트를 실행한다. 직접 adb 실행 결과는 표준 출력으로 확인하며 Gradle HTML/XML 보고서는 생성되지 않는다. 실제 테스트 1개가 실행되었는지와 실패/예외 출력을 확인하고 로그를 보관한다. APK 설치 성공이나 adb 프로세스 종료 코드만으로 SDK 스모크 성공을 판정하지 않는다.
+
+스모크 테스트는 최대 30초 동안 서비스 준비를 기다리며 capability 성공 뒤 비-null 상태 콜백을 받아야 통과한다. 미지원·권한 거부·null·timeout은 테스트 실패로 남기고 mock 값으로 대체하지 않는다. SET·제어·이벤트 구독은 하지 않으며 종료 시 SDK를 해제한다. `CAR_DOORS` 권한은 `pleosDebug`에만 있고 release에는 추가하지 않는다. CI에서는 계측 APK의 컴파일을 검증하고, 실제 테스트는 전용 Pleos AVD에서 connected 또는 직접 adb 명령으로 실행한다.
+
+2026-11-10 검증: 공개 SDK 다운로드/checksum, Pleos debug 앱·계측 APK 빌드, Android Lint, 원격 CI를 통과했다. 전용 AVD에서 직접 adb 계측도 `OK (1 test)`로 통과했다(12.081초). `HpcPleosSmoke` 로그에서 capability와 실제 도어 상태 콜백 `position=0`을 확인했다. `ANDROID_SERIAL`만 설정한 Gradle connected도 58초에 `BUILD SUCCESSFUL`, 테스트 1개 성공 및 정상 보고서 생성을 확인했다. 이는 에뮬레이터 Vehicle Service의 읽기 연동 검증이며 실제 차량 검증은 아니다.
+
+성공한 실행 환경은 Windows의 `HPC_Pleos_21_API34` AVD, Android Emulator 37.1.11, WHPX, API 34 / Pleos 2.1 / Vehicle Service 2.3.22(code 74), RAM 4GB, software GPU, Cold boot, ASCII SDK·AVD 경로다. 현재 사용자(user 10)를 지정한 launcher intent로 앱을 실행했고, activity의 `visible=true`와 스크린샷에서 HPC 초기 화면 표시를 확인했다.
 
 실제 차량 기능을 추가할 때는 SDK/AAOS 접근을 data 계층 어댑터로 분리하고 fake 구현과 동일한 인터페이스를 사용한다. 초기 단계에서 가짜 속도·위치·제어 성공 값을 제공하지 않는다. 지원 API, permission, capability, 주행 제한과 차량 연결 수명주기를 먼저 검증한다. Vehicle State/NaviHelper와 달리 일부 SDK는 제공 준비 중이므로 포털의 현재 상태를 다시 확인한다.
 

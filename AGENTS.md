@@ -8,8 +8,10 @@
 - `-PenablePleos=true`는 별도 `pleos` flavor와 공식 Vehicle SDK 2.3.2를 활성화한다. 공개 메타데이터와 AAR checksum 접근은 확인했다. 공식 빠른 시작의 2.3.1 표기는 실제 배포와 다르므로 가져오기 문서와 Maven 메타데이터를 함께 확인한다.
 - Pleos 빌드 검증: `./gradlew -PenablePleos=true :app:assemblePleosDebug :app:assemblePleosDebugAndroidTest :app:lintPleosDebug`.
 - CI `verify`는 기본 mock 검사 뒤 Pleos 앱·계측 APK 빌드와 Lint를 실행하고 APK를 각각 보관한다. AVD 설치 및 런타임 계측 테스트는 CI에 포함하지 않는다.
-- 전용 Pleos AVD의 읽기 전용 스모크 테스트: `./gradlew -PenablePleos=true :app:connectedPleosDebugAndroidTest --serial <PLEOS_SERIAL>`. 일반 Android 이미지에서 실패를 무시하거나 mock으로 통과시키지 않는다.
+- 전용 Pleos AVD의 읽기 전용 스모크 테스트: `ANDROID_SERIAL`을 대상 serial로 설정하고 `./gradlew -PenablePleos=true :app:connectedPleosDebugAndroidTest`를 실행한다. AGP 8.10.1의 불변 목록 수정 오류 가능성이 있는 `--serial`은 사용하지 않는다.
+- connected가 설치 전 `service list` 조회에서 멈추면 해당 작업을 종료하고 README의 공식 adb 계측 절차를 사용한다. 앱·테스트 APK를 모두 `adb -s`로 설치하되 테스트 APK에는 `install -r -t`를 사용하고, `am instrument -w -r --user current`로 AndroidJUnitRunner를 실행한다. 직접 실행의 테스트 결과를 확인하며 일반 Android 이미지에서 실패를 무시하거나 mock으로 통과시키지 않는다.
 - `src/androidTestPleos`는 debug 계측 검증 코드다. capability와 실제 비-null 도어 상태 콜백을 모두 받아야 성공하며 `initialize()` 반환만으로 연결 성공을 주장하지 않는다. 테스트에 SET·제어·실제 차량 식별자 조회를 추가하지 않는다.
+- 2026-11-10에 전용 Pleos 2.1 / API 34 / Vehicle Service 2.3.22 AVD에서 직접 adb와 `ANDROID_SERIAL`만 사용하는 Gradle connected 모두 스모크 1개가 통과했고 실제 도어 상태 콜백을 확인했다. 현재 사용자 launcher intent로 HPC 초기 화면도 시각 확인했다. 검증 범위는 에뮬레이터이며 실제 차량 검증과 구분한다. 상세 재현 환경과 최신 검증 상태는 README를 따른다.
 - 실제 차량 접근은 향후 별도 data 계층에서 SDK/AAOS 어댑터로 구현한다. UI에서 SDK를 직접 호출하거나 mock 값을 실제 값으로 표시하지 않는다.
 - 차량 기능 추가 시 capability, permission, 수명주기 해제, 주행 제한, 네트워크 단절 처리를 포함한다. 현재 앱 UI에는 차량 기능이 없고 `pleosDebug`에만 스모크 테스트용 `CAR_DOORS` 읽기 권한을 선언한다.
 - SDK/API 키·서명 키·실제 차량 식별자·개인정보를 저장소에 넣지 않는다. BuildConfig에 들어간 값은 APK에서 추출 가능하므로 비밀을 넣지 않는다.
