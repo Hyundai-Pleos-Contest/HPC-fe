@@ -32,7 +32,12 @@ android {
         targetSdk = 34
         versionCode = 1
         versionName = "0.1.0"
+        if (enablePleos) {
+            testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        }
     }
+
+    testBuildType = "debug"
 
     flavorDimensions += "vehicle"
     productFlavors {
@@ -84,5 +89,7 @@ dependencies {
     implementation(libs.androidx.compose.material3)
     if (enablePleos) {
         add("pleosImplementation", libs.pleos.vehicle)
+        add("androidTestImplementation", libs.androidx.test.runner)
+        add("androidTestImplementation", libs.androidx.test.junit)
     }
 }
