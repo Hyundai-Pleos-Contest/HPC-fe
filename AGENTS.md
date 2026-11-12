@@ -3,6 +3,8 @@
 - 이 저장소는 Pleos Connect 차량용 Android 앱이다. Kotlin + Jetpack Compose를 사용한다.
 - 협업·브랜치·커밋·PR 작업 전 `CONTRIBUTING.md`를 읽는다.
 - 환경과 명령의 기준은 `README.md`, 의존성 버전의 기준은 `gradle/libs.versions.toml`이다.
+- 공용 실행은 `docs/local-tools.md`의 `python scripts/pleos.py`를 따른다. 개인 SDK/AVD 경로를 하드코딩하지 않고 `test/launch/stop`에는 대상 `--serial`을 명시한다.
+- 스크립트 변경 시 `python -m unittest discover -s scripts -p "test_*.py"`를 실행한다. Python 3.12 이상이며 이 검사는 실제 SDK 런타임 검증과 구분한다.
 - 저장소 루트에서 `./gradlew :app:assembleMockDebug :app:lintMockDebug :app:testMockDebugUnitTest`로 검증한다. Windows에서는 `./gradlew.bat`을 사용한다.
 - 기본 `mock`은 차량 연결이 없는 초기 화면이다. SDK 연동 성공이나 실제 차량 데이터로 설명하지 않는다.
 - `-PenablePleos=true`는 별도 `pleos` flavor와 공식 Vehicle SDK 2.3.2를 활성화한다. 공개 메타데이터와 AAR checksum 접근은 확인했다. 공식 빠른 시작의 2.3.1 표기는 실제 배포와 다르므로 가져오기 문서와 Maven 메타데이터를 함께 확인한다.

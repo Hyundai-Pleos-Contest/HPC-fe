@@ -35,6 +35,10 @@ macOS/Linux에서는 `bash ./gradlew`를 사용한다. APK는 `app/build/outputs
 
 ## Pleos SDK와 에뮬레이터
 
+반복 실행은 [공용 Pleos 도구](docs/local-tools.md)의 `python scripts/pleos.py`를 사용할 수 있다.
+SDK/AVD 설치 뒤 `doctor → start → build → test → launch → stop`을 제공한다.
+Python 3.12 이상이 필요하며, 아래의 직접 Gradle/adb 명령도 계속 사용할 수 있다.
+
 기본 빌드는 Pleos 저장소에 접근하지 않는다. 선택 `pleos` flavor는 공식 가져오기 문서와 공개 Maven 메타데이터에 맞춰 `ai.pleos.playground:Vehicle:2.3.2`를 사용한다. 빠른 시작 문서에 남아 있는 2.3.1의 POM은 404지만 2.3.2 POM·module·AAR은 인증 없이 200을 반환한다. 2.3.2 AAR은 983,759 bytes이며 SHA-256은 `e11fdfe498cad3ecc0d5a2a6992b0c4a4d135195f1455018127bc069fd5ef937`이다. 실제 다운로드와 공식 checksum의 일치를 확인했다.
 
 다음 명령으로 `pleos` flavor와 읽기 전용 계측 테스트 APK를 빌드한다.
