@@ -1,4 +1,6 @@
 .gradle/
+__pycache__/
+*.py[cod]
 .gradle-home/
 .kotlin/
 .local/
