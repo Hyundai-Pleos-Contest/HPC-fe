@@ -7,6 +7,13 @@ import pleos
 
 
 class PleosSafetyTest(unittest.TestCase):
+    def test_unsafe_backend_url_never_reaches_batch_wrapper(self):
+        for address in ("http://localhost/&echo", "http://user:password@localhost", "http://localhost/%TEMP%", "http://localhost/?token=value"):
+            with self.subTest(address=address), patch("pleos.run") as run:
+                with self.assertRaisesRegex(RuntimeError, "plain HTTP"):
+                    pleos.build({}, address)
+                run.assert_not_called()
+
     def test_only_a_real_one_test_success_passes(self):
         self.assertTrue(pleos.smoke_passed("Time: 1.5\n\nOK (1 test)\n\nINSTRUMENTATION_CODE: -1\n"))
         for output in (

@@ -6,6 +6,7 @@ import re
 import subprocess
 import sys
 import time
+from urllib.parse import urlsplit
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -96,6 +97,15 @@ def start(sdk: Path, adb: str, args: argparse.Namespace, env: dict[str, str]) ->
 
 
 def build(env: dict[str, str], api_base_url: str | None) -> None:
+    if api_base_url:
+        parsed = urlsplit(api_base_url)
+        # gradlew.bat is interpreted by cmd.exe on Windows. Reject shell
+        # metacharacters before starting the wrapper, even in a URL path.
+        if (parsed.scheme not in ("http", "https") or not parsed.hostname
+                or parsed.username is not None or parsed.password is not None
+                or parsed.query or parsed.fragment
+                or re.search(r'[\s"&|<>^%!`]', api_base_url)):
+            raise RuntimeError("Use a plain HTTP(S) backend URL without credentials, query, fragment or shell characters.")
     wrapper = [str(ROOT / "gradlew.bat")] if os.name == "nt" else ["bash", str(ROOT / "gradlew")]
     command = wrapper + ["--no-daemon", "-PenablePleos=true", ":app:assemblePleosDebug", ":app:assemblePleosDebugAndroidTest", ":app:lintPleosDebug"]
     if api_base_url:
@@ -177,6 +187,6 @@ def main() -> int:
 if __name__ == "__main__":
     try:
         raise SystemExit(main())
-    except (OSError, RuntimeError, subprocess.SubprocessError) as error:
+    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as error:
         print(f"ERROR: {error}", file=sys.stderr)
         raise SystemExit(1)
